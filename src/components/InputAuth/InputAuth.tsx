@@ -14,11 +14,14 @@ type Props = {
 export const InputAuth = ({ type, value, onChange }: Props) => {
   const { t } = useTranslation();
   const PATTERN = '(?=.*?[0-9])(?=.*?[A-Za-z])(?=.*[^0-9A-Za-z]).+';
+  const PATTERN_MAIL = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$';
   const placeholder = t(type);
 
   let passPattern = undefined;
   if (type === Inputs.PASS) {
     passPattern = PATTERN;
+  } else {
+    passPattern = PATTERN_MAIL;
   }
 
   return (

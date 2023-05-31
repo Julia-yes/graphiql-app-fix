@@ -56,11 +56,7 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <p className={styles.hint}>{t(Localization.PASS_HINT)}</p>
-        <button
-          className={styles.button}
-        >
-          {t(UINames.REGISTER)}
-        </button>
+        <button className={styles.button}>{t(UINames.REGISTER)}</button>
       </form>
       <ToastContainer />
     </div>
