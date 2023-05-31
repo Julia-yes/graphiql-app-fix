@@ -16,15 +16,15 @@ import { Titles } from '../enums/Titles';
 
 const Graphi = () => {
   document.title = Titles.GRAPH;
-  const [user] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
   const [isDocShowed, setIsDocShowed] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       navigate(Paths.ROOT);
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   function showDoc() {
     setIsDocShowed(!isDocShowed);

@@ -48,7 +48,7 @@ const Register = () => {
           {t(UINames.SIGN_IN)}
         </NavLink>
       </div>
-      <form onSubmit={(e) => register(e)}>
+      <form onSubmit={(event) => register(event)}>
         <InputAuth type={Inputs.EMAIL} value={email} onChange={(e) => setEmail(e.target.value)} />
         <InputAuth
           type={Inputs.PASS}
@@ -58,7 +58,6 @@ const Register = () => {
         <p className={styles.hint}>{t(Localization.PASS_HINT)}</p>
         <button
           className={styles.button}
-          onClick={() => registerWithEmailAndPassword(email, password)}
         >
           {t(UINames.REGISTER)}
         </button>
