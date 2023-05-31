@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import stylesCommon from '../RRBlock.module.scss';
 import styles from './Request.module.scss';
 import { DataContext } from '../../../../context/Context';
@@ -30,13 +30,42 @@ export const Request = () => {
   const [queryTitle, setQueryTitle] = useState('');
   const { t } = useTranslation();
 
+  const CheckRequest = useCallback(
+    (data: string) => {
+      const parseResult = ParseDataBySymbols(data);
+      setNewError('');
+      if (!data) {
+        setNewError(Errors.EMPTY_REQUEST);
+        return;
+      }
+      if (parseResult[0] !== 'query') {
+        setNewError(Errors.REQUIRED_QUERY_WORD);
+        return;
+      }
+      if (
+        parseResult[0] === 'query' &&
+        (parseResult[2] === '(' || parseResult[2] === '{' || parseResult[2] === '')
+      ) {
+        if (parseResult[1].length > 40) {
+          setNewError(Errors.LONG_NAME);
+          return;
+        }
+        setQueryTitle(parseResult[1]);
+        return;
+      } else {
+        setNewError(Errors.QUERY_ERROR);
+      }
+    },
+    [setNewError]
+  );
+
   useEffect(() => {
     CheckRequest(request);
-  }, [request]);
+  }, [request, CheckRequest]);
 
   useEffect(() => {
     setNewVariablesError('');
-  }, [variables]);
+  }, [variables, setNewVariablesError]);
 
   const MakeRequest = async () => {
     setNewData(null);
@@ -58,32 +87,6 @@ export const Request = () => {
       }
     } else {
       return;
-    }
-  };
-
-  const CheckRequest = (data: string) => {
-    const parseResult = ParseDataBySymbols(data);
-    setNewError('');
-    if (!data) {
-      setNewError(Errors.EMPTY_REQUEST);
-      return;
-    }
-    if (parseResult[0] !== 'query') {
-      setNewError(Errors.REQUIRED_QUERY_WORD);
-      return;
-    }
-    if (
-      parseResult[0] === 'query' &&
-      (parseResult[2] === '(' || parseResult[2] === '{' || parseResult[2] === '')
-    ) {
-      if (parseResult[1].length > 40) {
-        setNewError(Errors.LONG_NAME);
-        return;
-      }
-      setQueryTitle(parseResult[1]);
-      return;
-    } else {
-      setNewError(Errors.QUERY_ERROR);
     }
   };
 
