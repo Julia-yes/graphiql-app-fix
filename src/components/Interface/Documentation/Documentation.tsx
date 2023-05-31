@@ -6,7 +6,7 @@ import {
   GraphQLInputObjectType,
   GraphQLEnumType,
 } from 'graphql';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loading } from '../../Loading/Loading';
 import DocType from '../../../types/DocType';
@@ -18,7 +18,7 @@ import { Links } from '../../../enums/Links';
 type DocProps = {
   isDocShowed: boolean;
 };
-export const Documentation = ({ isDocShowed }: DocProps) => {
+export const Documentation = memo(({ isDocShowed }: DocProps) => {
   const [types, setTypes] = useState<DocType[]>([]);
   const [history, setHistory] = useState<DocType[]>([]);
   const [selectedType, setSelectedType] = useState<DocType | null>(null);
@@ -27,73 +27,8 @@ export const Documentation = ({ isDocShowed }: DocProps) => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchSchema();
-
-    function fetchSchema() {
-      fetch(Links.SCHEMA_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: getIntrospectionQuery() }),
-      })
-        .then((response) => {
-          if (response.status >= 200 && response.status < 300) {
-            return response.json();
-          } else {
-            throw new Error(response.statusText);
-          }
-        })
-        .then(({ data }) => buildClientSchema(data))
-        .then((schema) => {
-          const typeMap = schema.getTypeMap();
-
-          const typesInMap = Object.keys(typeMap)
-            .filter((typeName) => !typeName.startsWith('__'))
-            .map((typeName) => {
-              const type = typeMap[typeName];
-              let typeFields: DocField[] | undefined;
-
-              if (
-                type instanceof GraphQLObjectType ||
-                type instanceof GraphQLInterfaceType ||
-                type instanceof GraphQLInputObjectType
-              ) {
-                const fields = type.getFields();
-                typeFields = Object.keys(fields).map((fieldName) => {
-                  const field = fields[fieldName];
-                  return {
-                    name: field.name,
-                    description: (field.description as string) || null,
-                    type: field.type.toString(),
-                    value: null,
-                  };
-                });
-              } else if (type instanceof GraphQLEnumType) {
-                const values = type.getValues();
-                typeFields = values.map((value) => {
-                  return {
-                    name: value.name,
-                    description: (value.description as string) || null,
-                    type: null,
-                    value: value.value,
-                  };
-                });
-              }
-
-              return {
-                name: type.name,
-                description: (type.description as string) || null,
-                fields: typeFields || null,
-              };
-            });
-          setTypes(typesInMap);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          setIsLoading(false);
-          setErr(error.message);
-        });
-    }
-  }, []);
+    if (isDocShowed) fetchSchema();
+  }, [isDocShowed]);
 
   useEffect(() => {
     if (history.length === 0) {
@@ -102,6 +37,71 @@ export const Documentation = ({ isDocShowed }: DocProps) => {
       setSelectedType(history[history.length - 1]);
     }
   }, [history]);
+
+  function fetchSchema() {
+    fetch(Links.SCHEMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: getIntrospectionQuery() }),
+    })
+      .then((response) => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.json();
+        } else {
+          throw new Error(response.statusText);
+        }
+      })
+      .then(({ data }) => buildClientSchema(data))
+      .then((schema) => {
+        const typeMap = schema.getTypeMap();
+
+        const typesInMap = Object.keys(typeMap)
+          .filter((typeName) => !typeName.startsWith('__'))
+          .map((typeName) => {
+            const type = typeMap[typeName];
+            let typeFields: DocField[] | undefined;
+
+            if (
+              type instanceof GraphQLObjectType ||
+              type instanceof GraphQLInterfaceType ||
+              type instanceof GraphQLInputObjectType
+            ) {
+              const fields = type.getFields();
+              typeFields = Object.keys(fields).map((fieldName) => {
+                const field = fields[fieldName];
+                return {
+                  name: field.name,
+                  description: (field.description as string) || null,
+                  type: field.type.toString(),
+                  value: null,
+                };
+              });
+            } else if (type instanceof GraphQLEnumType) {
+              const values = type.getValues();
+              typeFields = values.map((value) => {
+                return {
+                  name: value.name,
+                  description: (value.description as string) || null,
+                  type: null,
+                  value: value.value,
+                };
+              });
+            }
+
+            return {
+              name: type.name,
+              description: (type.description as string) || null,
+              fields: typeFields || null,
+            };
+          });
+        setTypes(typesInMap);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        setErr(error.message);
+      });
+  }
 
   function handleSelectType(type: DocType) {
     setHistory([...history, type]);
@@ -181,4 +181,4 @@ export const Documentation = ({ isDocShowed }: DocProps) => {
       )}
     </div>
   );
-};
+});
