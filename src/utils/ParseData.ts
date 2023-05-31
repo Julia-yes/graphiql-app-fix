@@ -1,7 +1,7 @@
 export const ParseData = (data: string) => {
   const parsedRequest: string[] = [];
   JSON.stringify(data)
-    .match(/[a-zA-Z0-9}${():'",\[\]]+/g)
+    .match(/[a-zA-Z0-9}${():'",[\]]+/g)
     ?.forEach((item) => {
       if (item !== 'n') {
         parsedRequest.push(item);
@@ -23,13 +23,13 @@ export const FinalViewOFResponse = (data: string) => {
   const parsedData = ParseData(data).split(' ');
   const string = parsedData
     .join(' ')
-    .replace(/\ \":/g, '": ')
-    .replace(/\ {2}\"/g, ' "')
+    .replace(/ ":/g, '": ')
+    .replace(/ {2}"/g, ' "')
     .replace(/ ",/g, '",\n')
     .replace(/ "}/g, '"\n}')
     .replace(/,{/g, ',\n{')
-    .replace(/,\ /g, ',\n ')
-    .replace(/([\{\}\[\]])/g, '$1\n')
+    .replace(/, /g, ',\n ')
+    .replace(/([{}[\]])/g, '$1\n')
     .replace(/}\n,/g, '},')
     .replace(/([A-Za-z0-9])\s*}/g, '$1\n}');
   return string.slice(1, -1);
